@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29613.14
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32819.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Splatoon2StreamingWidget", "Splatoon2StreamingWidget\Splatoon2StreamingWidget.csproj", "{7793F4DA-B439-4AD4-ABBE-EC6B15BC3D3B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Takotsubo", "Takotsubo\Takotsubo.csproj", "{39E0152B-9011-4548-B01D-18662EBA5BDD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Takotsubo.Init", "Takotsubo.Init\Takotsubo.Init.csproj", "{4EA31C9E-9C70-4C45-B01B-F71A115E9D27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +13,19 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7793F4DA-B439-4AD4-ABBE-EC6B15BC3D3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7793F4DA-B439-4AD4-ABBE-EC6B15BC3D3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7793F4DA-B439-4AD4-ABBE-EC6B15BC3D3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7793F4DA-B439-4AD4-ABBE-EC6B15BC3D3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39E0152B-9011-4548-B01D-18662EBA5BDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39E0152B-9011-4548-B01D-18662EBA5BDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39E0152B-9011-4548-B01D-18662EBA5BDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39E0152B-9011-4548-B01D-18662EBA5BDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EA31C9E-9C70-4C45-B01B-F71A115E9D27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EA31C9E-9C70-4C45-B01B-F71A115E9D27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EA31C9E-9C70-4C45-B01B-F71A115E9D27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EA31C9E-9C70-4C45-B01B-F71A115E9D27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {66452113-1DE1-4501-BCE6-F055104810DE}
+		SolutionGuid = {BD416A9D-2B79-4222-AFB9-A979B2E02B08}
 	EndGlobalSection
 EndGlobal

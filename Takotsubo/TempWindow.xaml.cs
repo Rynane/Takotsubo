@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using Takotsubo.utils;
 
-namespace Splatoon2StreamingWidget
+namespace Takotsubo
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// TempWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class TempWindow : Window
     {
         // 外人向け(string型の小数点をパースするときに、特定のリージョンではドットの部分がカンマとして扱われるのでドットで統一している)
         // client_id : 固定値（アプリに記載されてる）
@@ -27,10 +26,10 @@ namespace Splatoon2StreamingWidget
         // /api/results /api/results/番号 最新のバトルから今やってるものを取得
         // /api/x_power_ranking/200201T00_200301T00/ 今のXP ランキング
         // /api/coop_results サーモン
-        private SplatNet2 _splatNet2; // データ取得
-        private StreamingWindow _streamingWindow; // 配信Window
+        private ViewData _splatNet2; // データ取得
+        private StatusView _streamingWindow; // 配信Window
         private DispatcherTimer _autoUpdateTimer; // 配信Windowの更新タイミングを決定するタイマー
-        // 自動更新の時間の表示と中身
+                                                  // 自動更新の時間の表示と中身
         private Dictionary<string, int> _autoUpdatecomboBoxItems = new Dictionary<string, int>
         {
             {"30秒",30},
@@ -43,34 +42,8 @@ namespace Splatoon2StreamingWidget
         private DateTime autoUpdateLockTime; // この時間までに新規データの取得が一回も行われなかった場合は、自動更新をオフにする
         private string authCodeVerifier;
         private string sessionToken = "";
-        private bool isUpdating = false; // 更新ボタン連打を阻止
 
-        public MainWindow()
-        {
-            InitializeComponent();
-
-            this.Loaded += Window_Loaded;
-            this.Closed += MainWindowClosed;
-        }
-
-        private bool LockUpdate()
-        {
-            if (isUpdating) return false;
-
-            isUpdating = true;
-            IksmSessionTextBox.IsReadOnly = true;
-            UpdateSessionButton.Content = "Updating...";
-            InformationViewTextBlock.Text = "更新中...";
-            return true;
-        }
-
-        private void UnLockUpdate()
-        {
-            isUpdating = false;
-            IksmSessionTextBox.IsReadOnly = false;
-            UpdateSessionButton.Content = "Update session";
-            InformationViewTextBlock.Text = "更新完了!";
-        }
+        public TempWindow() => InitializeComponent();
 
         /// <summary>
         /// 配信画面の初期化
@@ -80,34 +53,25 @@ namespace Splatoon2StreamingWidget
         /// <returns>データ取得に成功したか</returns>
         private async Task<bool> TryInitializeSessionWindow(string sessionID)
         {
-            _splatNet2 = new SplatNet2(sessionID);
-            if (!await _splatNet2.TryInitializePlayerData()) return false;
+            _splatNet2 = new ViewData(sessionID);
+            if (!await _splatNet2.TryInitializePlayerData())
+            {
+                return false;
+            }
 
-            var ud = new UserData { user_name = _splatNet2.PlayerData.nickName, iksm_session = sessionID, principal_id = _splatNet2.PlayerData.principalID, session_token = sessionToken };
-            DataManager.SaveConfig(ud);
+            var ud = new UserData { UserName = _splatNet2.PlayerData.nickName, IksmSession = sessionID, Principal_ID = _splatNet2.PlayerData.principalID, SessionToken = sessionToken };
+            SettingManager.SaveConfig(ud);
 
             var ruleNumber = await _splatNet2.GetGachiSchedule();
             if (_streamingWindow != null && !_streamingWindow.IsClosed) _streamingWindow.Close();
-            _streamingWindow = new StreamingWindow();
+            _streamingWindow = new StatusView();
             _streamingWindow.UpdateWindow(_splatNet2.PlayerData, _splatNet2.RuleData);
             _streamingWindow.Show();
             this.Closing += (sender, args) => _streamingWindow.Close();
 
-            UserNameLabel.Content = "ユーザー名 : " + _splatNet2.PlayerData.nickName;
+            UserNameLabel.Content = $"ユーザー名 : {_splatNet2.PlayerData.nickName}";
 
             return true;
-        }
-
-        /// <summary>
-        /// 配信者用画面のgridの切り替え
-        /// </summary>
-        /// <param name="grid">切り替えたいgrid</param>
-        private void ChangeViewGrid(Grid grid)
-        {
-            MainGrid.Visibility = Visibility.Hidden;
-            SessionGrid.Visibility = Visibility.Hidden;
-
-            grid.Visibility = Visibility.Visible;
         }
 
         /// <summary>
@@ -115,41 +79,33 @@ namespace Splatoon2StreamingWidget
         /// </summary>
         private async Task UpdateViewer()
         {
-            if (!LockUpdate()) return;
+            _autoUpdateTimer.Stop();
 
-            try
+            if (_streamingWindow.IsClosed)
             {
-                _autoUpdateTimer.Stop();
-
-                if (_streamingWindow.IsClosed)
+                var ud = SettingManager.LoadConfig();
+                if (ud.IksmSession == "" || !await TryInitializeSessionWindow(ud.IksmSession))
                 {
-                    var ud = DataManager.LoadConfig();
-                    if (ud.iksm_session == "" || !await TryInitializeSessionWindow(ud.iksm_session))
-                    {
-                        ChangeViewGrid(SessionGrid);
-                        isUpdating = false;
-                        return;
-                    }
+                    MessageBox.Show("iksmでの初期化に失敗");
+                    return;
                 }
-
-                var lastBattleNumber = _splatNet2.lastBattleNumber;
-                await _splatNet2.UpdatePlayerData();
-                _streamingWindow.UpdateWindow(_splatNet2.PlayerData, _splatNet2.RuleData);
-
-                // 新しいバトルが存在した場合
-                if (lastBattleNumber != _splatNet2.lastBattleNumber)
-                {
-                    autoUpdateLockTime = DateTime.Now + new TimeSpan(0, 15, 0);
-                    nextUpdateTime = DateTime.Now + new TimeSpan(0, 0, 150);
-                    XpowerDecreaseTextBlock.Text = "";
-                }
-
-                if ((bool)AutoUpdateCheckBox.IsChecked)
-                    _autoUpdateTimer.Start();
             }
-            finally
+
+            var lastBattleNumber = _splatNet2.lastBattleNumber;
+            await _splatNet2.UpdatePlayerData();
+            _streamingWindow.UpdateWindow(_splatNet2.PlayerData, _splatNet2.RuleData);
+
+            // 新しいバトルが存在した場合
+            if (lastBattleNumber != _splatNet2.lastBattleNumber)
             {
-                UnLockUpdate();
+                autoUpdateLockTime = DateTime.Now + new TimeSpan(0, 15, 0);
+                nextUpdateTime = DateTime.Now + new TimeSpan(0, 0, 150);
+                XpowerDecreaseTextBlock.Text = "";
+            }
+
+            if ((bool)AutoUpdateCheckBox.IsChecked)
+            {
+                _autoUpdateTimer.Start();
             }
         }
 
@@ -175,64 +131,35 @@ namespace Splatoon2StreamingWidget
         /// </summary>
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            LockUpdate();
+            // iksm_sessionを入力するときは空白や改行などを除去
+            foreach (var cbi in _autoUpdatecomboBoxItems.Select(item => new ComboBoxItem { Content = item.Key }))
+                AutoUpdateTimeComboBox.Items.Add(cbi);
 
-            // アップデート後の後処理
-            if (Environment.CommandLine.IndexOf("/up", StringComparison.CurrentCultureIgnoreCase) != -1)
+            _autoUpdateTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 500) };
+            _autoUpdateTimer.Tick += AutoUpdateTimerElapsed;
+
+            var ud = SettingManager.LoadConfig();
+            if (ud.IksmSession == null) return;
+            if (await TryInitializeSessionWindow(ud.IksmSession))
             {
-                var args = Environment.GetCommandLineArgs();
-                var pid = Convert.ToInt32(args[2]);
-                Process.GetProcessById(pid).WaitForExit();
-                if (File.Exists("Splatoon2StreamingWidget.old")) File.Delete("Splatoon2StreamingWidget.old");
+                return;
             }
 
-            try
+            //トークン取得
+            /*if (ud.SessionToken == null) return;
+            sessionToken = ud.SessionToken;
+            var cookie = await TokenUtil.GetCookie(sessionToken);
+            
+            if (await TryInitializeSessionWindow(cookie))
             {
-                // 同期的にasyncメソッドを扱ってTask.Resultとかでawaitを使用しているメソッドを取得しようとするとデッドロックが起きる
-                var authURL = SplatNet2SessionToken.GenerateLoginURL();
-                authCodeVerifier = authURL.authCodeVerifier;
-                IksmSessionTextBox.Text = authURL.url;
+                return;
+            }*/
 
-                // iksm_sessionを入力するときは空白や改行などを除去
-                foreach (var cbi in _autoUpdatecomboBoxItems.Select(item => new ComboBoxItem { Content = item.Key }))
-                    AutoUpdateTimeComboBox.Items.Add(cbi);
-
-                _autoUpdateTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 0, 500) };
-                _autoUpdateTimer.Tick += AutoUpdateTimerElapsed;
-
-                ChangeViewGrid(SessionGrid);
-                var ud = DataManager.LoadConfig();
-                if (ud.iksm_session == null) return;
-                if (await TryInitializeSessionWindow(ud.iksm_session))
-                {
-                    ChangeViewGrid(MainGrid);
-                    return;
-                }
-
-                if (ud.session_token == null) return;
-                sessionToken = ud.session_token;
-                var cookie = await SplatNet2SessionToken.GetCookie(sessionToken);
-                if (await TryInitializeSessionWindow(cookie))
-                {
-                    ChangeViewGrid(MainGrid);
-                    return;
-                }
-
-                MessageBox.Show("ログインに失敗しました。\n初回起動時と同様、手動でログイン手順を踏んでください。", "ログインに失敗しました", MessageBoxButton.OK,
-                    MessageBoxImage.Hand);
-            }
-            finally
-            {
-                UnLockUpdate();
-                if (await UpdateManager.CheckUpdate())
-                    await UpdateManager.ShowUpdateWindow();
-            }
+            MessageBox.Show("ログインに失敗しました。\n初回起動時と同様、手動でログイン手順を踏んでください。", "ログインに失敗しました", MessageBoxButton.OK,
+                MessageBoxImage.Hand);
         }
 
-        private void MainWindowClosed(object sender, EventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
+        private void Window_Closed(object sender, EventArgs e) => Application.Current.Shutdown();
 
         /// <summary>
         /// 手動更新ボタンのクリック
@@ -241,50 +168,19 @@ namespace Splatoon2StreamingWidget
         /// <param name="e"></param>
         private async void UpdateViewerButton_Click(object sender, RoutedEventArgs e)
         {
+            UpdateViewerButton.IsEnabled = false;
             nextUpdateTime = DateTime.Now + new TimeSpan(0, 0, _autoUpdatecomboBoxItems[AutoUpdateTimeComboBox.Text]);
             await UpdateViewer();
-            if (!XpowerDecreaseMenuItem.IsChecked) return;
+            if (!XpowerDecreaseMenuItem.IsChecked)
+            {
+                UpdateViewerButton.IsEnabled = true;
+                return;
+            }
+
             var loseXp = await _splatNet2.GetLoseXP();
             if (loseXp < 0) XpowerDecreaseTextBlock.Text = $"負けた場合 : {loseXp:F1}";
+            UpdateViewerButton.IsEnabled = true;
         }
-
-        /// <summary>
-        /// セッションの初期化
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void UpdateSessionButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (!LockUpdate()) return;
-
-            try
-            {
-                var text = IksmSessionTextBox.Text.Trim();
-                if (Regex.IsMatch(text, "session_token_code=(.*)&"))
-                {
-                    var sessionTokenCode = Regex.Match(text, "session_token_code=(.*)&").Groups[1].Value;
-                    sessionToken = await SplatNet2SessionToken.GetSessionToken(sessionTokenCode, authCodeVerifier);
-                    var cookie = await SplatNet2SessionToken.GetCookie(sessionToken);
-                    IksmSessionTextBox.Text = cookie;
-                }
-
-                // 空白文字だけ？ 全角空白やtab?や改行はどうするか
-                var iksmSession = IksmSessionTextBox.Text.Trim();
-                if (await TryInitializeSessionWindow(iksmSession))
-                    ChangeViewGrid(MainGrid);
-            }
-            finally
-            {
-                UnLockUpdate();
-            }
-        }
-
-        /// <summary>
-        /// セッションを変えるボタンのクリック
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ChangeSessionMenuItem_Click(object sender, RoutedEventArgs e) => ChangeViewGrid(SessionGrid);
 
         /// <summary>
         /// 自動更新ボタンをアクティブにするチェック
@@ -335,11 +231,10 @@ namespace Splatoon2StreamingWidget
 
         private async void InitializeBattleRecordMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (_streamingWindow == null || _streamingWindow.IsClosed || isUpdating) return;
+            if (_streamingWindow == null || _streamingWindow.IsClosed) return;
 
             _autoUpdateTimer.Stop();
             InformationViewTextBlock.Text = "初期化中...";
-            isUpdating = true;
 
             await _splatNet2.TryInitializePlayerData();
             var ruleNumber = await _splatNet2.GetGachiSchedule();
@@ -348,25 +243,16 @@ namespace Splatoon2StreamingWidget
             InformationViewTextBlock.Text = "初期化完了!";
             if (AutoUpdateCheckBox.IsChecked != null && (bool)AutoUpdateCheckBox.IsChecked)
                 _autoUpdateTimer.Start();
-
-            isUpdating = false;
         }
 
-        private void VersionInformationMenuItem_Click(object sender, RoutedEventArgs e) => MessageBox.Show("StreamingWidget Ver" + UpdateManager.VersionNumber + "\nmade by @sisno_boomx\ndesigned by @aok_no_simpi", "バージョン情報", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+        private void VersionInformationMenuItem_Click(object sender, RoutedEventArgs e) => MessageBox.Show("StreamingWidget Ver" + "1.0.0" + "\nmade by @sisno_boomx\ndesigned by @aok_no_simpi", "バージョン情報", MessageBoxButton.OK, MessageBoxImage.Asterisk);
 
         private void XpowerDecreaseMenuItem_Checked(object sender, RoutedEventArgs e) => MessageBox.Show("この機能は、自動更新に対応していません。\nバトルが始まった段階で手動更新ボタンを押すと配信者側UIに負けた場合のXPが表示されます。", "情報表示について", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 
-        private async void CheckUpdateMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            var canUpdate = await UpdateManager.CheckUpdate();
-            if (!canUpdate) MessageBox.Show("このバージョンは最新です。", "アップデート確認", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-            else await UpdateManager.ShowUpdateWindow();
-        }
-
         private void MatchAnalyzeMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            var ud = DataManager.LoadConfig();
-            var url = "https://splatool.net/analytics/?iksm=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(ud.iksm_session)) + "#iklink";
+            var ud = SettingManager.LoadConfig();
+            var url = "https://splatool.net/analytics/?iksm=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(ud.IksmSession)) + "#iklink";
             var ps = new ProcessStartInfo(url)
             {
                 UseShellExecute = true,
@@ -377,8 +263,8 @@ namespace Splatoon2StreamingWidget
 
         private void MatchRecordMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            var ud = DataManager.LoadConfig();
-            var url = "https://splatool.net/records/?iksm=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(ud.iksm_session));
+            var ud = SettingManager.LoadConfig();
+            var url = "https://splatool.net/records/?iksm=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(ud.IksmSession));
             var ps = new ProcessStartInfo(url)
             {
                 UseShellExecute = true,
@@ -390,5 +276,7 @@ namespace Splatoon2StreamingWidget
         private void LeagueEstimateLPMenuItem_Checked(object sender, RoutedEventArgs e) => _splatNet2.WillDisplayEstimateLp = true;
         private void LeagueEstimateLPMenuItem_Unchecked(object sender, RoutedEventArgs e) => _splatNet2.WillDisplayEstimateLp = false;
         #endregion
+
     }
 }
+

@@ -3,21 +3,23 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Splatoon2StreamingWidget
+namespace Takotsubo.utils
 {
-    public static class LogManager
+    public static class Logger
     {
-        private const string Path = "data/log.txt";
+        private static readonly string filePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "/Takotsubo/";
+        private static FileStream sourceStream;
 
         public static async Task WriteLogAsync(string text)
         {
-            if (!Directory.Exists("data"))
-                Directory.CreateDirectory("data");
-            if (!File.Exists(Path)) File.Create(Path);
+            if (!Directory.Exists(filePath))
+            {
+                Directory.CreateDirectory(filePath);
+            }
 
-            text = "[" + DateTime.Now + "] " + text + "\n";
-            var encodedText = Encoding.Unicode.GetBytes(text);
-            await using var sourceStream = new FileStream(Path, FileMode.Append, FileAccess.Write, FileShare.Write, 4096, true);
+            sourceStream = sourceStream ?? new FileStream($"{filePath}log.log", FileMode.Append, FileAccess.Write, FileShare.Write, 4096, true);
+
+            var encodedText = Encoding.UTF8.GetBytes($"[{DateTime.Now}] {text} \n");
             await sourceStream.WriteAsync(encodedText, 0, encodedText.Length);
         }
     }

@@ -1,0 +1,15 @@
+﻿<Window x:Class="Takotsubo.Init.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Takotsubo.Init"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        Title="MainWindow" Height="360" Width="640">
+    <DockPanel LastChildFill="True" Margin="10">
+        <Label Content="「この人にする」のリンク、またはiksmを貼ってください" HorizontalAlignment="Center" DockPanel.Dock="Top" />
+        <Button Click="AuthorizeButton_Click" x:Name="UpdateSessionButton" Content="Update session" Width="250" DockPanel.Dock="Bottom" />
+        <TextBox x:Name="IksmSessionTextBox" TextWrapping="Wrap" Width="600" Height="200" />
+    </DockPanel>
+</Window>

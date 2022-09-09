@@ -5,12 +5,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
-namespace Splatoon2StreamingWidget
+namespace Takotsubo
 {
     /// <summary>
-    /// Window1.xaml の相互作用ロジック
+    /// StatusView.xaml の相互作用ロジック
     /// </summary>
-    public partial class StreamingWindow : Window
+    public partial class StatusView : Window
     {
         public bool IsClosed = false;
         private DispatcherTimer _animationDispatcherTimer;
@@ -35,7 +35,7 @@ namespace Splatoon2StreamingWidget
             public int paintPoint { get; set; }
         }
 
-        public StreamingWindow()
+        public StatusView()
         {
             InitializeComponent();
 
@@ -63,7 +63,10 @@ namespace Splatoon2StreamingWidget
 
         public void UpdateWindow(PlayerData playerData, RuleData ruleData)
         {
-            if (battleNum == playerData.WinCount + playerData.LoseCount) return;
+            if (battleNum == playerData.WinCount + playerData.LoseCount)
+            {
+                return;
+            }
             // common
             battleNum = playerData.WinCount + playerData.LoseCount;
             WLabel.Content = playerData.WinCount;
@@ -85,9 +88,13 @@ namespace Splatoon2StreamingWidget
                 case RuleData.GameMode.Gachi:
                     UdemaeLabel.Content = playerData.Udemae[ruleData.RuleIndex][0];
                     if (playerData.Udemae[ruleData.RuleIndex] != "X")
-                        XPowerLabel.Content = playerData.Udemae[ruleData.RuleIndex].Substring(1); // -、+、数字
+                    {
+                        XPowerLabel.Content = playerData.Udemae[ruleData.RuleIndex].Substring(1);
+                    } // -、+、数字
                     else if (playerData.XPower[ruleData.RuleIndex] == 0)
+                    {
                         XPowerLabel.Content = "Calculating";
+                    }
                     UpdateXPSubtractLabelColor(playerData.XPowerDiff);
                     XPowerLabel.Margin = new Thickness(90, 35, 0, 0);
                     XPowerSubtractLabel.Margin = new Thickness(370, 91, 0, 0);
@@ -108,7 +115,9 @@ namespace Splatoon2StreamingWidget
                     break;
                 case RuleData.GameMode.League2:
                     if (playerData.LeaguePower == 0)
+                    {
                         XPowerLabel.Content = "Calculating";
+                    }
                     UpdateXPSubtractLabelColor(playerData.LeaguePowerDiff);
                     XPowerLabel.Margin = new Thickness(40, 35, 0, 0);
                     XPowerSubtractLabel.Margin = new Thickness(320, 91, 0, 0);
@@ -122,7 +131,9 @@ namespace Splatoon2StreamingWidget
                     break;
                 case RuleData.GameMode.League4:
                     if (playerData.LeaguePower == 0)
+                    {
                         XPowerLabel.Content = "Calculating";
+                    }
                     UpdateXPSubtractLabelColor(playerData.LeaguePowerDiff);
                     XPowerLabel.Margin = new Thickness(40, 35, 0, 0);
                     XPowerSubtractLabel.Margin = new Thickness(320, 91, 0, 0);
@@ -143,7 +154,9 @@ namespace Splatoon2StreamingWidget
                     break;
                 case RuleData.GameMode.FestivalSolo:
                     if (playerData.FesPower == 0)
+                    {
                         XPowerLabel.Content = "Calculating";
+                    }
                     UpdateXPSubtractLabelColor(playerData.FesPowerDiff);
                     XPowerLabel.Margin = new Thickness(40, 35, 0, 0);
                     XPowerSubtractLabel.Margin = new Thickness(320, 91, 0, 0);
@@ -158,11 +171,17 @@ namespace Splatoon2StreamingWidget
                 case RuleData.GameMode.FestivalTeam:
                     var cpt = playerData.ContributionPointTotal;
                     if (cpt >= (long)Math.Pow(10, 10))
+                    {
                         XPowerLabel.Content = $"{cpt / Math.Pow(10, 9):F1}" + "B";
+                    }
                     else if (cpt >= (long)Math.Pow(10, 7))
+                    {
                         XPowerLabel.Content = $"{cpt / Math.Pow(10, 6):F1}" + "M";
+                    }
                     else if (cpt >= (long)Math.Pow(10, 4))
+                    {
                         XPowerLabel.Content = $"{cpt / Math.Pow(10, 3):F1}" + "K";
+                    }
                     else
                         XPowerLabel.Content = cpt;
 
@@ -206,9 +225,13 @@ namespace Splatoon2StreamingWidget
             UdemaeLabel.Content = playerData.Udemae[ruleData.RuleIndex][0];
             RuleLabel.Content = ruleData.Name;
             if (playerData.Udemae[ruleData.RuleIndex] != "X")
+            {
                 XPowerLabel.Content = playerData.Udemae[ruleData.RuleIndex].Substring(1);
+            }
             else if (playerData.XPower[ruleData.RuleIndex] == 0)
+            {
                 XPowerLabel.Content = "Calculating";
+            }
 
             XPowerLabel.Margin = new Thickness(90, 35, 0, 0);
             XPowerSubtractLabel.Margin = new Thickness(370, 91, 0, 0);
@@ -254,7 +277,10 @@ namespace Splatoon2StreamingWidget
             contentNow.paintPoint += (contentTarget.paintPoint - contentNow.paintPoint) / animationTimes;
 
             animationTimes--;
-            if (animationTimes != 0) return;
+            if (animationTimes != 0)
+            {
+                return;
+            }
 
             // アニメーションを終了し、値をtargetの値と一致させる
             _animationDispatcherTimer.Stop();

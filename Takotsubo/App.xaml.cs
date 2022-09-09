@@ -1,9 +1,15 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
 
-namespace Splatoon2StreamingWidget
+namespace Takotsubo
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    /// App.xaml の相互作用ロジック
     /// </summary>
     public partial class App : Application
     {

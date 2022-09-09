@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Splatoon2StreamingWidget
+namespace Takotsubo
 {
-    public static class SplatNet2DataStructure
+    public class SplaNetData
     {
         #region StreamingWidgetGitHub
         public class VersionData
@@ -36,46 +36,135 @@ namespace Splatoon2StreamingWidget
             public string screenname { get; set; }
         }
 
+
         public class SplatoonToken
         {
-            public string correlationId { get; set; }
-            public int status { get; set; }
-            public TokenResult result { get; set; }
+            public int status;
+            public string correlationId;
+
+            public TokenResult result;
 
             public class TokenResult
             {
-                public UserData user { get; set; }
-
-                public WebApiServerCredential webApiServerCredential { get; set; }
-                public FirebaseCredential firebaseCredential { get; set; }
+                public UserData user;
+                public WebApiServerCredential webApiServerCredential;
+                public FirebaseCredential firebaseCredential;
 
                 public class UserData
                 {
-                    public string name { get; set; }
-                    public string id { get; set; }
-                    public string supportId { get; set; }
-                    public string imageUri { get; set; }
-                    public MemberShip membership { get; set; }
+                    public ulong id;
+                    public string nsaId, imageUri, name, supportId, etag;
+                    public bool isChildRestricted;
+                    public MemberShip membership;
 
                     public class MemberShip
                     {
-                        public bool active { get; set; }
+                        public bool active;
                     }
                 }
 
                 public class WebApiServerCredential
                 {
-                    public string accessToken { get; set; }
-                    public int expiresIn { get; set; }
+                    public string accessToken;
+                    public int expiresIn;
                 }
 
                 public class FirebaseCredential
                 {
-                    public string accessToken { get; set; }
-                    public int expiresIn { get; set; }
+                    public string accessToken;
+                    public int expiresIn;
                 }
             }
         }
+
+        /*public class SplatoonToken
+        {
+            public bool analyticsOptedIn, isChild, emailOptedIn, clientFriendsOptedIn, emailVerified;
+            public string country, gender, language, nickname, screenName, birthday, id;
+            public object mii, candidateMiis, region;
+            public ulong updatedAt, analyticsOptedInUpdatedAt, emailOptedInUpdatedAt, createdAt, clientFriendsOptedInUpdatedAt;
+
+            public IkaTimeZone timezone;
+            public AnalyticsPermissions analyticsPermissions;
+            public EachEmailOptedIn eachEmailOptedIn;
+
+            public class IkaTimeZone
+            {
+                public string id, utcOffset, name;
+                public int utcOffsetSeconds;
+            }
+
+            public class AnalyticsPermissions
+            {
+                public InternalAnalysis internalAnalysis;
+                public TargetMarketing targetMarketing;
+
+                public class InternalAnalysis
+                {
+                    public ulong updatedAt;
+                    public bool permitted;
+                }
+                public class TargetMarketing
+                {
+                    public ulong updatedAt;
+                    public bool permitted;
+                }
+            }
+
+            public class EachEmailOptedIn
+            {
+                public Deals deals;
+                public Survey survey;
+
+                public class Deals
+                {
+                    public bool optedIn;
+                    public ulong updatedAt;
+                }
+
+                public class Survey
+                {
+                    public bool optedIn;
+                    public ulong updatedAt;
+                }
+            }
+        }*/
+
+
+        /*public class TokenResult
+        {
+            public UserData user { get; set; }
+
+            public WebApiServerCredential webApiServerCredential { get; set; }
+            public FirebaseCredential firebaseCredential { get; set; }
+
+            public class UserData
+            {
+                public string name { get; set; }
+                public string id { get; set; }
+                public string supportId { get; set; }
+                public string imageUri { get; set; }
+                public MemberShip membership { get; set; }
+
+                public class MemberShip
+                {
+                    public bool active { get; set; }
+                }
+            }
+
+            public class WebApiServerCredential
+            {
+                public string accessToken { get; set; }
+                public int expiresIn { get; set; }
+            }
+
+            public class FirebaseCredential
+            {
+                public string accessToken { get; set; }
+                public int expiresIn { get; set; }
+            }
+        }
+    }*/
 
         public class WebServiceToken
         {
@@ -89,15 +178,9 @@ namespace Splatoon2StreamingWidget
 
         public class FlapgResult
         {
-            public FlapgInnerResult result { get; set; }
-
-            public class FlapgInnerResult
-            {
-                public string f { get; set; }
-                public string p1 { get; set; }
-                public string p2 { get; set; }
-                public string p3 { get; set; }
-            }
+            public string f { get; set; }
+            public string request_id { get; set; }
+            public ulong timestamp { get; set; }
         }
 
         public class S2SResult
@@ -178,7 +261,7 @@ namespace Splatoon2StreamingWidget
 
             public class BattleResult
             {
-                public int battle_number;
+                public string battle_number;
                 public PlayerResult player_result;
                 public MyTeamResult my_team_result;
                 public GameMode game_mode;
@@ -193,7 +276,7 @@ namespace Splatoon2StreamingWidget
                 public int? contribution_point; // fes
                 public long? contribution_point_total; // fes
                 public float? estimate_gachi_power; // ?
-                
+
 
                 public int? my_team_count;
                 public int? other_team_count;
