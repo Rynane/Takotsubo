@@ -176,6 +176,12 @@ namespace Takotsubo
             }
         }
 
+        public class BulletTokens
+        {
+            public string bulletToken, lang;
+            public bool is_noe_country;
+        }
+
         public class FlapgResult
         {
             public string f { get; set; }

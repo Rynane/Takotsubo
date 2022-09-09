@@ -135,7 +135,7 @@ namespace Takotsubo.Init
 
             var body = new Dictionary<string, string>
             {
-                {"client_id", "71b963c1b7b6d119"},  //splatoon2 service
+                {"client_id", "71b963c1b7b6d119"},
                 {"session_token", sessionToken},
                 {"grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer-session-token"}
             };
@@ -217,13 +217,13 @@ namespace Takotsubo.Init
             #region access token 取得
             request = new HttpRequestMessage(HttpMethod.Post, "https://api-lp1.znc.srv.nintendo.net/v3/Account/Login");
 
-            request.Headers.Add("Accept-Language", "ja-JP");
+            request.Headers.Add("Accept-Language", "ja-JP;q=1.0, en-JP;q=0.9");
             request.Headers.Add("Accept", "application/json; charset=utf-8");
-            request.Headers.Add("Connection", "Keep-Alive");
+            request.Headers.Add("Connection", "keep-alive");
             request.Headers.Add("Accept-Encoding", "gzip");
             request.Headers.Add("Authorization", "Bearer");
-            request.Headers.Add("X-Platform", "Android");
-            request.Headers.Add("User-Agent", "com.nintendo.znca/" + version + " (Android/7.1.2)");
+            request.Headers.Add("X-Platform", "iOS");
+            request.Headers.Add("User-Agent", "Coral/2.2.0 (com.nintendo.znca; build:2400; iOS 15.5.0) Alamofire/5.6.1");
             request.Headers.Add("Host", "api-lp1.znc.srv.nintendo.net");
             request.Headers.Add("X-ProductVersion", version);
 
@@ -285,13 +285,13 @@ namespace Takotsubo.Init
             request = new HttpRequestMessage(HttpMethod.Post, "https://api-lp1.znc.srv.nintendo.net/v2/Game/GetWebServiceToken");
 
             request.Headers.Add("Accept", "application/json");
-            request.Headers.Add("Connection", "Keep-Alive");
+            request.Headers.Add("Connection", "keep-alive");
             request.Headers.Add("Accept-Encoding", "gzip");
             request.Headers.Add("Authorization", "Bearer " + idToken);
-            request.Headers.Add("X-Platform", "Android");
-            request.Headers.Add("User-Agent", "com.nintendo.znca/" + version + " (Android/7.1.2)");
+            request.Headers.Add("X-Platform", "iOS");
+            request.Headers.Add("User-Agent", "Coral/2.2.0 (com.nintendo.znca; build:2400; iOS 15.5.0) Alamofire/5.6.1");
             request.Headers.Add("Host", "api-lp1.znc.srv.nintendo.net");
-            request.Headers.Add("X-ProductVersion", "2.1.1");
+            request.Headers.Add("X-ProductVersion", "2.2.0");
 
             if (IsBodyEmpty(idToken))
             {
@@ -305,11 +305,11 @@ namespace Takotsubo.Init
                     "parameter",
                     new Dictionary<string, string>
                     {
-                        {"id", "5741031244955648"},
-                        {"f", flapgApp.f},
                         {"registrationToken", idToken},
+                        {"requestId", flapgApp.request_id},
                         {"timestamp", flapgApp.timestamp.ToString()},
-                        {"requestId", flapgApp.request_id}
+                        {"f", flapgApp.f},
+                        {"id", "4834290508791808"},  //Splatoon3
                     }
                 },
             };
@@ -324,11 +324,10 @@ namespace Takotsubo.Init
 
             request.Content = new StringContent(json4, Encoding.UTF8, "application/json");
 
-            string splatoonAccessToken;
             try
             {
                 var res = await HttpClientPool.GetAutoDeserializedJsonAsync<SplaNetData.WebServiceToken>(request);
-                splatoonAccessToken = res.result.accessToken;
+                return res.result.accessToken;
             }
             catch (HttpRequestException e)
             {
@@ -346,50 +345,7 @@ namespace Takotsubo.Init
             }
 
             #endregion splatoon access token 取得
-
-            #region iksm_session 取得
-            request = new HttpRequestMessage(HttpMethod.Get, "https://app.splatoon2.nintendo.net/?lang=en-US");
-
-            request.Headers.Add("X-IsAppAnalyticsOptedIn", "false");
-            request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-            request.Headers.Add("Accept-Encoding", "gzip,deflate");
-            request.Headers.Add("X-GameWebToken", splatoonAccessToken);
-            request.Headers.Add("Accept-Language", "ja-JP");
-            request.Headers.Add("X-IsAnalyticsOptedIn", "false");
-            request.Headers.Add("Connection", "keep-alive");
-            request.Headers.Add("DNT", "0");
-            request.Headers.Add("User-Agent", "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Mobile Safari/537.36");
-            request.Headers.Add("Host", "app.splatoon2.nintendo.net");
-            request.Headers.Add("X-Requested-With", "com.nintendo.znca");
-
-            if (IsBodyEmpty(splatoonAccessToken))
-            {
-                await Logger.WriteLogAsync("Body is null");
-                return "";
-            }
-
-            try
-            {
-                var cookies = await HttpClientPool.GetCookieContainer(request);
-                var responseCookies = cookies.GetCookies(new Uri("https://app.splatoon2.nintendo.net/")).Cast<Cookie>();
-                return responseCookies.First().Value;
-            }
-            catch (HttpRequestException e)
-            {
-                await Logger.WriteLogAsync(String.Format("Failed to get \"iksm session\". {0}", e));
-                return "";
-            }
-            catch (IndexOutOfRangeException e)
-            {
-                await Logger.WriteLogAsync(String.Format("Failed to get \"cookie\". {0}", e));
-                return "";
-            }
-            finally
-            {
-                request.Dispose();
-            }
-
-            #endregion iksm_session 取得
+            
         }
 
         public enum Steps : int
