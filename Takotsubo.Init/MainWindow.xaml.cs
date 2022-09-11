@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using System.Windows;
 using Takotsubo.utils;
 
@@ -15,6 +17,7 @@ namespace Takotsubo.Init
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(Callback);
             var (authCodeVerifier,  url) = TokenUtil.GenerateLoginURL();
             authCode = authCodeVerifier;
             IksmSessionTextBox.Text = url;
@@ -33,5 +36,9 @@ namespace Takotsubo.Init
                 SettingManager.SaveConfig(userData);
             }
         }
+
+        public bool Callback(object sender, X509Certificate certificate, X509Chain chain, System.Net.Security.SslPolicyErrors errors) => true;
+
+
     }
 }

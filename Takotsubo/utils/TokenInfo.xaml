@@ -1,0 +1,11 @@
+﻿<Window x:Class="Takotsubo.utils.TokenInfo"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="TokenInfo" Height="360" Width="640">
+    <StackPanel Margin="10">
+        <Label Content="WebServiceToken" />
+        <TextBox x:Name="ServiceTokenLabel" IsReadOnly="True" />
+        <Label Content="BulletToken" />
+        <TextBox x:Name="BulletTokenLabel" IsReadOnly="True" />
+    </StackPanel>
+</Window>

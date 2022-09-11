@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,8 +12,8 @@ namespace Takotsubo.Init
 {
     internal class TokenUtil
     {
+        //Logic Reference
         // https://github.com/frozenpandaman/splatnet2statink/blob/master/iksm.py
-        private static long GetUnixTime() => (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
         private const string appVersion = "2.2.0";
 
         /// <summary>
@@ -77,11 +76,11 @@ namespace Takotsubo.Init
                 request.Headers.Add("Host", "accounts.nintendo.com");
 
                 var body = new Dictionary<string, string>
-            {
-                {"client_id", "71b963c1b7b6d119"},
-                {"session_token_code", sessionTokenCode},
-                {"session_token_code_verifier", authCodeVerifier}
-            };
+                {
+                    {"client_id", "71b963c1b7b6d119"},
+                    {"session_token_code", sessionTokenCode},
+                    {"session_token_code_verifier", authCodeVerifier}
+                };
 
                 if (IsBodyEmpty(body))
                 {
@@ -110,14 +109,11 @@ namespace Takotsubo.Init
         }
 
         /// <summary>
-        /// Login process for SplatNet2
+        /// Login process for SplatNet3
         /// </summary>
         /// <returns>iksm session</returns>
         public static async Task<string> GetCookie(string sessionToken)
         {
-            var timeStamp = GetUnixTime();
-            var guid = Guid.NewGuid().ToString();
-
             string version = SettingManager.LoadConfig().Version;
             if (version == null || version == "") version = appVersion;
 
@@ -135,7 +131,7 @@ namespace Takotsubo.Init
 
             var body = new Dictionary<string, string>
             {
-                {"client_id", "71b963c1b7b6d119"},
+                {"client_id", "71b963c1b7b6d119"},  //NSO Mobile App
                 {"session_token", sessionToken},
                 {"grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer-session-token"}
             };
@@ -345,7 +341,7 @@ namespace Takotsubo.Init
             }
 
             #endregion splatoon access token 取得
-            
+
         }
 
         public enum Steps : int
@@ -387,7 +383,7 @@ namespace Takotsubo.Init
 
         private static bool IsBodyEmpty(Dictionary<string, Dictionary<string, string>> dic)
         {
-            return dic.Any(data => Enumerable.Any<KeyValuePair<string, string>>(data.Value, data2 => string.IsNullOrEmpty(data2.Value)));
+            return dic.Any(data => Enumerable.Any(data.Value, data2 => string.IsNullOrEmpty(data2.Value)));
         }
 
         private static bool IsBodyEmpty(params string[] val)

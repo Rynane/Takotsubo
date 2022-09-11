@@ -71,6 +71,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AppStaticStatus.cs" />
     <Compile Include="SplaNetData.cs" />
     <Compile Include="StatusView.xaml.cs">
       <DependentUpon>StatusView.xaml</DependentUpon>
@@ -78,9 +79,13 @@
     <Compile Include="TempWindow.xaml.cs">
       <DependentUpon>TempWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="utils\BulletTokenUtil.cs" />
     <Compile Include="utils\HttpClientPool.cs" />
     <Compile Include="utils\Logger.cs" />
     <Compile Include="utils\SettingManager.cs" />
+    <Compile Include="utils\TokenInfo.xaml.cs">
+      <DependentUpon>TokenInfo.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewData.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -99,6 +104,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="TempWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="utils\TokenInfo.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

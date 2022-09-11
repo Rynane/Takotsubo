@@ -14,7 +14,7 @@ namespace Takotsubo.utils
         private static readonly CookieContainer CookieContainer = new CookieContainer();
         // private static readonly WebProxy Proxy = WebProxy.GetDefaultProxy();
         // private static readonly HttpClientHandler Handler = new HttpClientHandler { CookieContainer = CookieContainer, Proxy = Proxy };
-        private static readonly HttpClientHandler Handler = new HttpClientHandler() { CookieContainer = CookieContainer };
+        private static readonly HttpClientHandler Handler = new HttpClientHandler() { UseCookies = false };
         private static readonly HttpClient Client = new HttpClient(Handler);
 
         public static async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request) => await Client.SendAsync(request);

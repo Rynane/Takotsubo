@@ -8,7 +8,7 @@
         Loaded="Window_Loaded"
         Title="MainWindow" Height="360" Width="640">
     <DockPanel LastChildFill="True" Margin="10">
-        <Label Content="「この人にする」のリンク、またはiksmを貼ってください" HorizontalAlignment="Center" DockPanel.Dock="Top" />
+        <Label Content="「この人にする」のリンクを貼ってください" HorizontalAlignment="Center" DockPanel.Dock="Top" />
         <Button Click="AuthorizeButton_Click" x:Name="UpdateSessionButton" Content="Update session" Width="250" DockPanel.Dock="Bottom" />
         <TextBox x:Name="IksmSessionTextBox" TextWrapping="Wrap" Width="600" Height="200" />
     </DockPanel>
